@@ -23,6 +23,6 @@ if [ ! -d "venv" ]; then
 fi
 
 source venv/bin/activate
-pip install -r requirements.txt
+$VENV_DIR/bin/pip install -r requirements.txt
 
 echo "=== DEPLOY DONE ==="
