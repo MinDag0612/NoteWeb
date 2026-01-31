@@ -1,29 +1,15 @@
 [Unit]
-Description=FastAPI Backend Service
+Description=FastAPI Backend
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
+User=root
+WorkingDirectory=/var/www/NoteWeb/
+EnvironmentFile=/var/www/NoteWeb/.env
 
-WorkingDirectory=/var/www/NoteWeb
-
-# chạy gunicorn trong venv, KHÔNG cần activate
-ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn \
-          backendSrc.main:app \
-          --bind 127.0.0.1:8000 \
-          --workers 2 \
-          --worker-class uvicorn.workers.UvicornWorker
+ExecStart=/var/www/NoteWeb/backendSrc/venv/bin/gunicorn backendSrc.main:app --bind 127.0.0.1:8000 --workers 2 --worker->
 
 Restart=always
-RestartSec=3
-
-# log ra journalctl
-StandardOutput=journal
-StandardError=journal
-
-# biến môi trường (nếu cần)
-EnvironmentFile=/var/www/NoteWeb/backendSrc/.env
 
 [Install]
 WantedBy=multi-user.target

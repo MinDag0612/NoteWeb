@@ -20,7 +20,7 @@ sudo apt install -y python3-venv python3-pip
 echo "Setup backend..."
 cd $BACKEND_DIR
 
-Lệnh tạo venv
+#Lệnh tạo venv
 if [ ! -d "venv" ]; then
   python3 -m venv venv
 fi
