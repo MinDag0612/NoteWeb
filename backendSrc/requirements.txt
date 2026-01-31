@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+gunicorn 
 
 sqlalchemy
 
@@ -8,7 +9,6 @@ bcrypt
 python-dotenv
 
 pymongo
-bson
 
 cloudinary
 
@@ -17,5 +17,9 @@ google-auth
 python-multipart
 
 sympy
+
+requests
+
+python-jose[cryptography]
 
 
