@@ -1,0 +1,44 @@
+- Trong quá trình đóng docker, t đã sửa 1 số đường dẫn trong backendSrc/main.py, vì khi build ra 
+thì phần backendSrc nó bị hiểu sai đường dẫn. Cần check nếu nó ảnh hưởng tới việc build qua SH.
+- sửa nginx.conf phần proxy-pass trùng với url service trong docker-compose
+- NOTES: CẦN DOCKER DESKTOP ĐỂ SỬ DỤNG! (có thể cần login)
+- File docker-compose.build.yml là file để tự build local
+- File docker-compose.image.yml là pull về từ docker hub (dangbk1412)
+
+docker compose -f docker-compose.prod.yml up -d
+
+-- Build local-- (phần này chỉ làm nếu muốn test build ở local)
++ docker compose -f docker-compose.build.yml up -d --build
+# ở các bược tiếp theo này chỉ nên làm nếu muốn up lên docker hub (các dấu +)
+# lệnh mẫu: docker tag <source-image>[:TAG] <your-docker-hub>/<target-image>[:TAG]
++ docker tag noteweb-frontend <your-docker-hub>/noteweb-frontend:latest
++ docker tag noteweb-backend  <your-docker-hub>/noteweb-backend:latest
++ docker login
++ docker push <your-docker-hub>/noteweb-frontend:latest
++ docker push <your-docker-hub>/noteweb-backend:latest
+
+--- pull image --- (làm phần này là được ko cần build)
+docker compose -f docker-compose.image.yml up -d
+
+### helpler ###
+--- Xóa container + network + volume của compose ---
+docker compose down -v
+
+--- Xóa tất cả container đã dừng ---
+docker container prune -f
+
+--- Xóa tất cả image không được sử dụng ---
+docker image prune -a -f
+
+--- Xóa build cache ---
+docker builder prune -a -f
+
+--- Xóa tất cả volume không dùng ---
+docker volume prune -f
+
+--- xóa sạch toàn bộ docker(trở về tình trạng như mới cài): cân nhắc nếu
+bạn biết bạn đang làm gì ---
+docker system prune -a --volumes -f
+
+--- kiểm tra dụng lượng ---
+docker system df
