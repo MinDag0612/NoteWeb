@@ -2,6 +2,7 @@
 thì phần backendSrc nó bị hiểu sai đường dẫn. Cần check nếu nó ảnh hưởng tới việc build qua SH.
 - sửa nginx.conf phần proxy-pass trùng với url service trong docker-compose
 - NOTES: CẦN DOCKER DESKTOP ĐỂ SỬ DỤNG! (có thể cần login)
+- Các lệnh đều chạy ở thư mục root
 - File docker-compose.build.yml là file để tự build local
 - File docker-compose.image.yml là pull về từ docker hub (dangbk1412)
 
