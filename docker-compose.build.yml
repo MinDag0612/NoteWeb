@@ -2,11 +2,15 @@ services:
   backend:
     build:
       context: ./backendSrc
+    volumes:
+    - uploads-data:/app/uploads
     env_file:
       - ./.env
     container_name: fastapi
     expose:
       - "8000"
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -26,3 +30,22 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+  
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    env_file:
+      - .env
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  mongo-data:
+  uploads-data:

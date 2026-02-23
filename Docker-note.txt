@@ -5,6 +5,7 @@ thì phần backendSrc nó bị hiểu sai đường dẫn. Cần check nếu n�
 - Các lệnh đều chạy ở thư mục root
 - File docker-compose.build.yml là file để tự build local
 - File docker-compose.image.yml là pull về từ docker hub (dangbk1412)
+- phần persistant volumes chưa thể check do database không xài local (23/02/2026)
 
 docker compose -f docker-compose.prod.yml up -d
 
