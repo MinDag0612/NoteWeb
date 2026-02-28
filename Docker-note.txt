@@ -44,3 +44,15 @@ docker system prune -a --volumes -f
 
 --- kiểm tra dụng lượng ---
 docker system df
+
+
+NOTE xem DB - chạy container và xem bằng compass
+
+** Chạy MongoDB container **
+docker run -d --name mongo-local -p 27017:27017 mongo
+
+** Restore dump vào container **
+mongorestore --host localhost --port 27017 dump/WebNote
+
+** connect compass với **
+mongodb://localhost:27017
