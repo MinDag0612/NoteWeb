@@ -2,12 +2,12 @@ services:
   backend:
     image: bkgamer1412/noteweb-backend:latest
     volumes:
-    - uploads-data:/app/uploads
+      - uploads-data:/app/uploads
     env_file:
       - ./.env
     container_name: fastapi
-    expose:
-      - "8000"
+    depends_on:
+      - mongodb
     networks:
       - app-network
 
@@ -24,10 +24,9 @@ services:
   mongodb:
     image: mongo:6.0
     container_name: mongodb
-    env_file:
-      - .env
     volumes:
       - mongo-data:/data/db
+      - ./dump:/dump
     networks:
       - app-network
 

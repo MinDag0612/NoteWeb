@@ -24,7 +24,7 @@ docker compose -f docker-compose.image.yml up -d
 
 ### helpler ###
 --- Xóa container + network + volume của compose ---
-docker compose down -v
+docker compose -f docker-compose.image.yml down  -v
 
 --- Xóa tất cả container đã dừng ---
 docker container prune -f
@@ -56,3 +56,5 @@ mongorestore --host localhost --port 27017 dump/WebNote
 
 ** connect compass với **
 mongodb://localhost:27017
+
+
