@@ -30,7 +30,11 @@ sudo systemctl start docker
 docker compose -f docker-compose.image.yml up -d
 ```
 
-### config Nginx
+### Restore mongo vào container
+```bash
+docker exec -it mongodb mongorestore --drop /dump
+```
+### CONFIG NGINX
 ## Bước 1
 config gần như tương tự bên Deploy-step.md
 
@@ -128,4 +132,30 @@ sudo nginx -t
 Reload nginx
 ```bash
 sudo systemctl reload nginx
+```
+Kiểm tra Docker
+```bash
+docker --version
+docker compose version
+```
+Kiểm tra Docker service
+```bash
+sudo systemctl status docker
+sudo systemctl is-enabled docker
+```
+Kiểm tra reverse proxy host-level (ví dụ Nginx)
+```bash
+sudo systemctl status nginx
+```
+Kiểm tra image đã pull từ registry
+```bash
+docker images
+```
+Kiểm tra container chạy
+```bash
+docker ps
+```
+Restart container
+```bash
+docker compose -f docker-compose.image.yml  restart
 ```
