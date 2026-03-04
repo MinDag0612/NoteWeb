@@ -79,16 +79,8 @@ sudo nano /etc/nginx/sites-available/noteweb
 Dán đúng config trong nginx.conf
 ```bash
 server {
-    # listen 443 ssl http2;
-    # server_name dangtm.pro www.dangtm.pro;
     listen 80;
-    server_name _; # tên ip hoặc tên miền project
-
-    # SSL (certbot đã tạo đúng rồi)
-    # ssl_certificate /etc/letsencrypt/live/dangtm.pro/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/dangtm.pro/privkey.pem;
-    # include /etc/letsencrypt/options-ssl-nginx.conf;
-    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    server_name _;
 
     # React build
     root /var/www/NoteWeb/build;
