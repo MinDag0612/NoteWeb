@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const GOOGLE_CLIENT_ID =
+  process.env.REACT_APP_GOOGLE_CLIENT_ID ||
+  "322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com";
 
 function checkAcc(idToken, navigator) {
   fetch(process.env.REACT_APP_API_PROCESS_LOGIN_GG, {
@@ -54,8 +57,7 @@ function GoogleLogin() {
     const interval = setInterval(() => {
       if (window.google && window.google.accounts) {
         window.google.accounts.id.initialize({
-          client_id:
-            "322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com",
+          client_id: GOOGLE_CLIENT_ID,
           callback: handleCredentialResponse,
         });
 
