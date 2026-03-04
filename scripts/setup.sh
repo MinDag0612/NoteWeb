@@ -42,6 +42,7 @@ sudo_cmd() {
 install_node() {
   local install_nodejs=1
 
+  # Reuse the existing Node.js runtime when it already satisfies the baseline.
   if command -v node >/dev/null 2>&1; then
     local detected_major
     detected_major="$(node --version | sed -E 's/^v([0-9]+).*/\1/')"
@@ -52,6 +53,7 @@ install_node() {
   fi
 
   if [ "${install_nodejs}" -eq 1 ]; then
+    # Install a current LTS runtime for the CRA frontend and frontend build tasks.
     log_step "Installing Node.js ${NODE_MAJOR}.x from NodeSource"
     curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | sudo_cmd bash -
     sudo_cmd apt-get install -y nodejs
@@ -59,6 +61,7 @@ install_node() {
 }
 
 prepare_runtime_directories() {
+  # Create predictable runtime directories that later phases can reuse.
   log_step "Creating runtime directories"
   sudo_cmd mkdir -p \
     "${PROJECT_DIR}/logs" \
@@ -72,9 +75,11 @@ prepare_backend() {
     return
   fi
 
+  # Isolate backend dependencies inside a project-local virtual environment.
   log_step "Creating backend virtual environment"
   python3 -m venv "${PYTHON_VENV_DIR}"
 
+  # Install Python packages required by the FastAPI application.
   log_step "Installing backend Python dependencies"
   "${PYTHON_VENV_DIR}/bin/pip" install --upgrade pip
   "${PYTHON_VENV_DIR}/bin/pip" install -r "${BACKEND_DIR}/requirements.txt"
@@ -86,6 +91,7 @@ prepare_frontend() {
     return
   fi
 
+  # Install frontend packages so local development and future production builds are reproducible.
   log_step "Installing frontend JavaScript dependencies"
   (
     cd "${FRONTEND_DIR}"
@@ -106,6 +112,7 @@ main() {
   log_step "Updating apt package metadata"
   sudo_cmd apt-get update
 
+  # Install the base toolchain needed by the Python backend and the React frontend.
   log_step "Installing base Ubuntu packages required by the project stack"
   sudo_cmd apt-get install -y \
     ca-certificates \

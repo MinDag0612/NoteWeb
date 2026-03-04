@@ -17,6 +17,7 @@ This directory collects the repository-level deliverables required for Phase 1 o
 - Root project guide: [`README.md`](../README.md)
 - Automation script guide: [`scripts/README.md`](../scripts/README.md)
 - Phase 1 checklist: [`CHECKLIST.md`](./CHECKLIST.md)
+- Requirements traceability: [`TRACEABILITY.md`](./TRACEABILITY.md)
 - Evidence instructions: [`evidence/README.md`](./evidence/README.md)
 
 ## Assumptions

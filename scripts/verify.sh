@@ -18,6 +18,7 @@ EOF
 report_command() {
   local command_name="$1"
 
+  # Report the detected runtime version when a required command is available.
   if command -v "${command_name}" >/dev/null 2>&1; then
     printf '[ok] %s: %s\n' "${command_name}" "$("${command_name}" --version 2>&1 | head -n 1)"
   else
@@ -28,6 +29,7 @@ report_command() {
 report_path() {
   local path_name="$1"
 
+  # Confirm that expected runtime directories were created during setup.
   if [ -e "${path_name}" ]; then
     printf '[ok] %s\n' "${path_name}"
   else
