@@ -32,6 +32,10 @@ Supported overrides:
 - `BACKEND_DIR`
 - `PYTHON_VENV_DIR`
 - `NODE_MAJOR`
+- `INSTALL_FRONTEND_DEPS`
+- `INSTALL_BACKEND_DEPS`
+- `INSTALL_NGINX`
+- `INSTALL_CERTBOT`
 
 Example:
 
@@ -59,3 +63,4 @@ bash scripts/verify.sh
 - Run `setup.sh` on a fresh Ubuntu host before manual deployment work in Phase 2.
 - Run `verify.sh` after setup or before recording evidence for the technical report.
 - Keep secrets in `.env` only. Never add secrets to these scripts.
+- Use `INSTALL_NGINX=1` and `INSTALL_CERTBOT=1` only when you intentionally want the script to install those packages.

@@ -17,10 +17,11 @@ EOF
 
 report_command() {
   local command_name="$1"
+  local version_flag="${2:---version}"
 
   # Report the detected runtime version when a required command is available.
   if command -v "${command_name}" >/dev/null 2>&1; then
-    printf '[ok] %s: %s\n' "${command_name}" "$("${command_name}" --version 2>&1 | head -n 1)"
+    printf '[ok] %s: %s\n' "${command_name}" "$("${command_name}" "${version_flag}" 2>&1 | head -n 1)"
   else
     printf '[missing] %s\n' "${command_name}"
   fi
@@ -46,12 +47,14 @@ main() {
   report_command node
   report_command npm
   report_command python3
-  report_command pip
+  report_command pip3
+  report_command git
 
   report_path "${PROJECT_DIR}/logs"
   report_path "${PROJECT_DIR}/uploads"
   report_path "${PROJECT_DIR}/data"
   report_path "${PYTHON_VENV_DIR}"
+  report_path "${BACKEND_DIR}/requirements.txt"
 }
 
 main "$@"

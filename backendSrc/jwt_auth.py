@@ -14,6 +14,9 @@ JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+if not JWT_SECRET_KEY:
+    raise RuntimeError("JWT_SECRET_KEY is required for token signing and verification.")
+
 security = HTTPBearer()
 
 
@@ -62,4 +65,4 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="Token expired")
 
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token 1")
+        raise HTTPException(status_code=401, detail="Invalid token")

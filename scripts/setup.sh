@@ -6,6 +6,10 @@ FRONTEND_DIR="${FRONTEND_DIR:-${PROJECT_DIR}}"
 BACKEND_DIR="${BACKEND_DIR:-${PROJECT_DIR}/backendSrc}"
 PYTHON_VENV_DIR="${PYTHON_VENV_DIR:-${BACKEND_DIR}/.venv}"
 NODE_MAJOR="${NODE_MAJOR:-20}"
+INSTALL_FRONTEND_DEPS="${INSTALL_FRONTEND_DEPS:-1}"
+INSTALL_BACKEND_DEPS="${INSTALL_BACKEND_DEPS:-1}"
+INSTALL_NGINX="${INSTALL_NGINX:-0}"
+INSTALL_CERTBOT="${INSTALL_CERTBOT:-0}"
 
 print_usage() {
   cat <<'EOF'
@@ -24,6 +28,10 @@ Optional environment variables:
   BACKEND_DIR      Default: ${PROJECT_DIR}/backendSrc
   PYTHON_VENV_DIR  Default: ${BACKEND_DIR}/.venv
   NODE_MAJOR       Default: 20
+  INSTALL_FRONTEND_DEPS  Default: 1
+  INSTALL_BACKEND_DEPS   Default: 1
+  INSTALL_NGINX          Default: 0
+  INSTALL_CERTBOT        Default: 0
 EOF
 }
 
@@ -60,6 +68,14 @@ install_node() {
   fi
 }
 
+apt_install() {
+  if [ "$#" -eq 0 ]; then
+    return
+  fi
+
+  sudo_cmd apt-get install -y "$@"
+}
+
 prepare_runtime_directories() {
   # Create predictable runtime directories that later phases can reuse.
   log_step "Creating runtime directories"
@@ -75,19 +91,38 @@ prepare_backend() {
     return
   fi
 
+  if [ "${INSTALL_BACKEND_DEPS}" != "1" ]; then
+    log_step "Skipping backend dependency installation (INSTALL_BACKEND_DEPS=${INSTALL_BACKEND_DEPS})"
+    return
+  fi
+
   # Isolate backend dependencies inside a project-local virtual environment.
-  log_step "Creating backend virtual environment"
-  python3 -m venv "${PYTHON_VENV_DIR}"
+  if [ ! -x "${PYTHON_VENV_DIR}/bin/python" ]; then
+    log_step "Creating backend virtual environment"
+    python3 -m venv "${PYTHON_VENV_DIR}"
+  else
+    log_step "Reusing existing backend virtual environment at ${PYTHON_VENV_DIR}"
+  fi
+
+  if [ ! -f "${BACKEND_DIR}/requirements.txt" ]; then
+    log_step "Skipping backend dependency installation because requirements.txt is missing"
+    return
+  fi
 
   # Install Python packages required by the FastAPI application.
   log_step "Installing backend Python dependencies"
-  "${PYTHON_VENV_DIR}/bin/pip" install --upgrade pip
-  "${PYTHON_VENV_DIR}/bin/pip" install -r "${BACKEND_DIR}/requirements.txt"
+  "${PYTHON_VENV_DIR}/bin/python" -m pip install --upgrade pip
+  "${PYTHON_VENV_DIR}/bin/python" -m pip install -r "${BACKEND_DIR}/requirements.txt"
 }
 
 prepare_frontend() {
   if [ ! -f "${FRONTEND_DIR}/package.json" ]; then
     log_step "Skipping frontend dependency installation because ${FRONTEND_DIR}/package.json was not found"
+    return
+  fi
+
+  if [ "${INSTALL_FRONTEND_DEPS}" != "1" ]; then
+    log_step "Skipping frontend dependency installation (INSTALL_FRONTEND_DEPS=${INSTALL_FRONTEND_DEPS})"
     return
   fi
 
@@ -114,7 +149,7 @@ main() {
 
   # Install the base toolchain needed by the Python backend and the React frontend.
   log_step "Installing base Ubuntu packages required by the project stack"
-  sudo_cmd apt-get install -y \
+  apt_install \
     ca-certificates \
     curl \
     gnupg \
@@ -126,6 +161,16 @@ main() {
     python3-venv \
     pkg-config \
     libssl-dev
+
+  if [ "${INSTALL_NGINX}" = "1" ]; then
+    log_step "Installing Nginx"
+    apt_install nginx
+  fi
+
+  if [ "${INSTALL_CERTBOT}" = "1" ]; then
+    log_step "Installing Certbot and Nginx plugin"
+    apt_install certbot python3-certbot-nginx
+  fi
 
   install_node
   prepare_runtime_directories

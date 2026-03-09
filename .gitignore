@@ -20,6 +20,12 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!phase3/compose/.env.compose.example
+*.pem
+*.key
+*.crt
+*.p12
+*.secret
 
 # Python
 __pycache__/
@@ -39,11 +45,14 @@ backendSrc/venv/
 logs/
 uploads/
 data/
+phase3/compose/runtime.env
+phase3/compose/.env
 
 # OS / editor artifacts
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
 
 # Local-only files
 NOTE.txt
-nginx
