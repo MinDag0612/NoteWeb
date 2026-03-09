@@ -1,13 +1,18 @@
-from datetime import datetime
 import os
+import re
+import uuid
+from datetime import datetime
+from pathlib import Path
+import base64
 
 import bcrypt
 import cloudinary
 import cloudinary.uploader
 from bson import ObjectId
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
@@ -19,36 +24,102 @@ from backendSrc.schema.UserSche import User
 
 load_dotenv()
 
-CLOUDY_NAME = os.getenv("CLOUDY_NAME")
-CLOUDY_API_KEY = os.getenv("CLOUDY_API_KEY")
-CLOUDY_SECRET = os.getenv("CLOUDY_SECRET")
-GOOGLE_CLIENT_ID = os.getenv(
-    "GOOGLE_CLIENT_ID",
-    "322317196530-hlrp5pv8jt3igvcs78jjmgr01jtmpdo3.apps.googleusercontent.com",
+API_ROOT_PATH = os.getenv("API_ROOT_PATH", "/api")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+BACKEND_CORS_ORIGINS_RAW = os.getenv(
+    "BACKEND_CORS_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000",
 )
 
-app = FastAPI(root_path="/api")
+UPLOAD_STORAGE_MODE = os.getenv("UPLOAD_STORAGE_MODE", "hybrid").strip().lower()
+UPLOAD_LOCAL_DIR = Path(os.getenv("UPLOAD_LOCAL_DIR", "uploads")).expanduser().resolve()
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+UPLOAD_CLOUDINARY_FOLDER = os.getenv("UPLOAD_CLOUDINARY_FOLDER", "NoteWeb")
+
+CLOUDY_NAME = os.getenv("CLOUDY_NAME") or os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDY_API_KEY = os.getenv("CLOUDY_API_KEY") or os.getenv("CLOUDINARY_API_KEY")
+CLOUDY_SECRET = os.getenv("CLOUDY_SECRET") or os.getenv("CLOUDINARY_API_SECRET")
+CLOUDINARY_READY = bool(CLOUDY_NAME and CLOUDY_API_KEY and CLOUDY_SECRET)
+
+VALID_UPLOAD_MODES = {"local", "cloudinary", "hybrid"}
+SAFE_EXTENSION_PATTERN = re.compile(r"^\.[a-z0-9]{1,10}$")
+
+
+def parse_cors_origins(raw_value: str) -> list[str]:
+    origins = [item.strip() for item in raw_value.split(",") if item.strip()]
+    return origins if origins else ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+
+def safe_extension(filename: str | None) -> str:
+    suffix = Path(filename or "").suffix.lower()
+    if SAFE_EXTENSION_PATTERN.match(suffix):
+        return suffix
+    return ".bin"
+
+
+def build_upload_url(request: Request, filename: str) -> str:
+    if PUBLIC_BASE_URL:
+        return f"{PUBLIC_BASE_URL}/uploads/{filename}"
+    return f"{str(request.base_url).rstrip('/')}/uploads/{filename}"
+
+
+def persist_local_upload(request: Request, content: bytes, original_name: str | None) -> str:
+    extension = safe_extension(original_name)
+    file_name = f"{uuid.uuid4().hex}{extension}"
+    destination = UPLOAD_LOCAL_DIR / file_name
+    destination.write_bytes(content)
+    return build_upload_url(request, file_name)
+
+
+def upload_to_cloudinary(content: bytes, content_type: str | None) -> str:
+    if not CLOUDINARY_READY:
+        raise HTTPException(
+            status_code=500,
+            detail="Cloudinary is not configured. Set CLOUDY_NAME, CLOUDY_API_KEY, and CLOUDY_SECRET.",
+        )
+
+    mime_type = content_type or "application/octet-stream"
+    encoded_content = base64.b64encode(content).decode("ascii")
+    data_uri = f"data:{mime_type};base64,{encoded_content}"
+
+    result = cloudinary.uploader.upload(data_uri, folder=UPLOAD_CLOUDINARY_FOLDER)
+    return result["secure_url"]
+
+
+if UPLOAD_STORAGE_MODE not in VALID_UPLOAD_MODES:
+    raise RuntimeError(
+        "UPLOAD_STORAGE_MODE must be one of: local, cloudinary, hybrid. "
+        f"Received: {UPLOAD_STORAGE_MODE}"
+    )
+
+UPLOAD_LOCAL_DIR.mkdir(parents=True, exist_ok=True)
+if CLOUDINARY_READY:
+    cloudinary.config(
+        cloud_name=CLOUDY_NAME,
+        api_key=CLOUDY_API_KEY,
+        api_secret=CLOUDY_SECRET,
+    )
+
+cors_origins = parse_cors_origins(BACKEND_CORS_ORIGINS_RAW)
+allow_credentials = "*" not in cors_origins
+
+app = FastAPI(root_path=API_ROOT_PATH)
 connDB = Conn()
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_LOCAL_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://dangtm.pro",
-        "https://www.dangtm.pro",
-    ],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-cloudinary.config(
-    cloud_name=CLOUDY_NAME,
-    api_key=CLOUDY_API_KEY,
-    api_secret=CLOUDY_SECRET,
-)
-
 
 def verify_google_token(credential: str):
+    if not GOOGLE_CLIENT_ID:
+        return None
+
     try:
         idinfo = id_token.verify_oauth2_token(
             credential,
@@ -73,9 +144,23 @@ def health_check():
 
 
 @app.post("/upload-image")
-async def upload_image(file: UploadFile = File(...)):
-    result = cloudinary.uploader.upload(file.file, folder="NoteWeb")
-    return {"url": result["secure_url"]}
+async def upload_image(request: Request, file: UploadFile = File(...)):
+    content = await file.read()
+    await file.close()
+
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    if UPLOAD_STORAGE_MODE == "local":
+        return {"url": persist_local_upload(request, content, file.filename)}
+
+    if UPLOAD_STORAGE_MODE == "cloudinary":
+        return {"url": upload_to_cloudinary(content, file.content_type)}
+
+    try:
+        return {"url": persist_local_upload(request, content, file.filename)}
+    except OSError:
+        return {"url": upload_to_cloudinary(content, file.content_type)}
 
 
 @app.post("/login")
@@ -113,6 +198,9 @@ def login(loginReq: schema_req.LoginRequest):
 
 @app.post("/login-google")
 def login_google(loginReq: schema_req.LoginGoogleRequest):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google login is not configured on the server")
+
     google_user = verify_google_token(loginReq.credential)
     if not google_user:
         raise HTTPException(status_code=401, detail="Invalid Google token")

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import NoteCard from "../components/NoteCard";
 import "./NotesPageStyle.css";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ export default function NotesPage({ token }) {
   const navigator = useNavigate();
 
   const onRemove = async (noteId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa?")) return;
+    if (!window.confirm("Are you sure you want to delete this note?")) return;
 
     try {
       const res = await fetch(process.env.REACT_APP_API_DELETE_NOTE, {
@@ -25,9 +25,7 @@ export default function NotesPage({ token }) {
         throw new Error(err.detail || "Delete not complete !!");
       }
 
-      const data = await res.json();
-      // console.log(data);
-
+      await res.json();
       setNotes((prev) => prev.filter((n) => n.noteId !== noteId));
     } catch (error) {
       alert(error.message);
@@ -49,54 +47,50 @@ export default function NotesPage({ token }) {
     }
 
     const data = await res.json();
-
-    // 👇 CẬP NHẬT STATE NGAY
     setNotes((prev) => [...prev, data.note]);
   };
 
   const fetchNotes = async () => {
-      try {
-        const res = await fetch(process.env.REACT_APP_API_NOTES, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const res = await fetch(process.env.REACT_APP_API_NOTES, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const contentType = res.headers.get("content-type");
+      const contentType = res.headers.get("content-type");
 
-        if (!res.ok) {
-          if (res.status === 401) {
-            sessionStorage.setItem("error", "Login session expired");
-            navigator("/");
-            return;
-          }
-
-          if (contentType?.includes("application/json")) {
-            const err = await res.json();
-            throw new Error(err.detail || "Request failed");
-          }
-
-          throw new Error("Request failed");
+      if (!res.ok) {
+        if (res.status === 401) {
+          sessionStorage.setItem("error", "Login session expired");
+          navigator("/");
+          return;
         }
 
-        if (!contentType?.includes("application/json")) {
-          throw new Error("Invalid server response");
+        if (contentType?.includes("application/json")) {
+          const err = await res.json();
+          throw new Error(err.detail || "Request failed");
         }
 
-        const data = await res.json();
-        console.log(data.notes)
-        setNotes(data.notes);
-      } catch (err) {
-        console.error("Fetch notes error:", err);
-        alert(err.message);
+        throw new Error("Request failed");
       }
-    };
+
+      if (!contentType?.includes("application/json")) {
+        throw new Error("Invalid server response");
+      }
+
+      const data = await res.json();
+      setNotes(data.notes);
+    } catch (err) {
+      console.error("Fetch notes error:", err);
+      alert(err.message);
+    }
+  };
 
   useEffect(() => {
     if (!token) return;
 
     fetchNotes();
-    // console.log("TOKEN SENT:", token);
   }, [token, navigator]);
 
   return (

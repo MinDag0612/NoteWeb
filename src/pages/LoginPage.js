@@ -34,9 +34,6 @@ export default function LoginPage() {
     })
       .then(async (response) => {
         if (!response.ok) {
-          console.log(response.status);
-          console.log(response.headers.get("content-type"));
-
           const err = await response.json();
           throw new Error(err.detail || "Login failed");
         }
@@ -45,7 +42,6 @@ export default function LoginPage() {
       .then((data) => {
         sessionStorage.setItem("user", JSON.stringify(data.user));
         sessionStorage.setItem("access_token", data.access_token);
-        // console.log(JSON.stringify(data.user))
         navigator("/home");
       })
       .catch((error) => {
