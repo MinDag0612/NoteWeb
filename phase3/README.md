@@ -1,14 +1,33 @@
-# Phase 3 Placeholder
+﻿# Phase 3 - Docker + Docker Compose Deployment
 
-This directory is reserved for the Docker and Docker Compose deployment artifacts required in Phase 3 of the DevOps midterm project.
+This directory contains production templates and runbooks for containerizing the application on the same Ubuntu server used in Phase 2.
 
-Expected contents later include:
+## Goal
 
-- production Dockerfile assets
-- `docker-compose.yml` and related configuration
-- image registry evidence
-- container execution screenshots
-- persistent volume evidence
-- HTTPS and reverse proxy verification for the containerized stack
+Replace host-based app runtime with Docker Compose while preserving:
 
-This placeholder exists now so that the repository already matches the top-level deliverable structure required by the specification.
+- the HTTPS domain and host-level reverse proxy from Phase 2
+- backend API behavior and upload functionality
+- data persistence for MongoDB and uploaded files
+
+## Directory Layout
+
+- `docker/`: production Dockerfiles for backend and frontend.
+- `compose/`: production compose project files (`image:` pull model).
+- `runbook/`: build/publish/deploy/validation instructions.
+- `evidence/`: screenshot and log checklist for grading.
+
+## Key Compliance Points Implemented
+
+- Compose file uses pre-published images (`image:`), not `build:`.
+- MongoDB and upload storage are both persistent volumes.
+- Restart policy is defined for all runtime services.
+- App runtime does not depend on PM2/systemd in Phase 3.
+- Host-level Nginx remains the public HTTPS entrypoint.
+
+## Manual Steps Still Required
+
+- Build and push images to your own registry namespace.
+- Deploy on actual Ubuntu server and configure runtime secrets.
+- Update Nginx upstream targets to container loopback ports.
+- Capture real evidence under `phase3/evidence/`.

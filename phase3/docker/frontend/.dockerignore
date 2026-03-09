@@ -1,0 +1,10 @@
+﻿# Frontend image build ignore
+.git
+.gitignore
+node_modules
+build
+backendSrc
+phase1
+phase2
+phase3/evidence
+docs

@@ -1,193 +1,168 @@
-# NoteWeb Midterm Project
+﻿# NoteWeb Midterm Repository (Compliance-Oriented)
 
-## Overview
+## 1. Project Overview
 
-This repository contains a note management web application prepared for a DevOps-oriented midterm project. The system consists of a React single-page frontend and a FastAPI backend backed by MongoDB. Users can authenticate, create and manage notes, and upload note images through backend logic.
+This repository contains a note management web application prepared for a DevOps midterm submission.
+The stack is:
 
-The repository is organized to satisfy Phase 1 expectations of the midterm specification: clear documentation, safe environment management, reproducible Ubuntu setup scripts, and a structured place for later deployment evidence.
+- Frontend: React (Create React App)
+- Backend: FastAPI (Python)
+- Database: MongoDB
 
-## Features
+Core user flows include authentication, notes CRUD, and image upload handled by backend logic.
 
-- Web user interface implemented as a React SPA
-- FastAPI backend for authentication and note management
-- MongoDB persistence for users and notes
-- File upload flow handled by the backend and stored through Cloudinary
-- Local authentication and Google Sign-In support
-- Phase-based repository layout for later deployment deliverables
+## 2. Architecture Summary
 
-## Tech Stack
+- Frontend runs as a single-page application.
+- Backend exposes REST endpoints for login, note operations, and uploads.
+- MongoDB stores user and note documents.
+- Uploads support hybrid storage:
+  - local filesystem (default, required for volume persistence)
+  - Cloudinary fallback (optional)
 
-### Frontend
-
-- React 19
-- Create React App
-- React Router
-- Bootstrap 5
-
-### Backend
-
-- Python 3
-- FastAPI
-- PyMongo
-- `python-jose` for JWT handling
-- `bcrypt` for password verification
-- Cloudinary SDK
-- Google authentication libraries
-
-### Data and Infrastructure
-
-- MongoDB
-- Shell automation for Ubuntu host preparation
-- Nginx and systemd placeholders for later deployment phases
-
-## Repository Structure
+## 3. Repository Structure
 
 ```text
 .
-|-- backendSrc/           # FastAPI application, schemas, MongoDB helpers
-|-- public/               # CRA public assets
-|-- src/                  # React application source
-|-- scripts/              # Phase 1 automation and verification scripts
-|-- phase1/               # Phase 1 deliverables, checklist, and evidence placeholders
-|-- phase2/               # Phase 2 placeholder for traditional deployment artifacts
-|-- phase3/               # Phase 3 placeholder for Docker artifacts
-|-- .env.example          # Safe environment template
-|-- package.json          # Frontend dependencies and scripts
-`-- backendSrc/requirements.txt
+|-- backendSrc/                    # FastAPI app, DB access, schemas
+|-- public/                        # Frontend public assets
+|-- src/                           # Frontend source
+|-- scripts/                       # Ubuntu setup + verification scripts
+|-- phase1/                        # Git workflow, traceability, and phase-1 evidence scaffolding
+|-- phase2/                        # Host-based deployment configs/runbooks/evidence checklist
+|-- phase3/                        # Docker + Compose configs/runbooks/evidence checklist
+|-- docs/                          # Technical report and diagram templates
+|-- .env.example                   # Safe config template
+|-- .gitignore
+`-- package.json
 ```
 
-Generated output such as `build/` is intentionally excluded from version control and must be recreated locally with `npm run build`.
+## 4. Local Development Setup
 
-## Local Setup
+### Prerequisites
 
-### Assumptions
+- Node.js 20+
+- Python 3.10+
+- MongoDB (local or remote)
 
-- Local development uses Node.js 20 LTS or newer.
-- Local development uses Python 3.10 or newer.
-- The example environment file assumes the backend is started directly on `http://127.0.0.1:8000` without a reverse proxy.
-
-### 1. Clone the repository
+### Steps
 
 ```bash
-git clone https://github.com/MinDag0612/NoteWeb.git
+git clone <your-repository-url>
 cd NoteWeb
-```
-
-### 2. Create the local environment file
-
-```bash
 cp .env.example .env
 ```
 
-Update `.env` with real credentials before starting the application. Never commit `.env`.
+Configure `.env` values before running the app.
 
-### 3. Install and run the backend
-
-From the repository root:
+Backend:
 
 ```bash
 python -m venv backendSrc/.venv
-```
-
-Linux or macOS:
-
-```bash
+# Linux/macOS
 source backendSrc/.venv/bin/activate
+# PowerShell
+# .\backendSrc\.venv\Scripts\Activate.ps1
 pip install -r backendSrc/requirements.txt
 uvicorn backendSrc.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-PowerShell:
-
-```powershell
-.\backendSrc\.venv\Scripts\Activate.ps1
-pip install -r backendSrc\requirements.txt
-uvicorn backendSrc.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-### 4. Install and run the frontend
-
-Open a second terminal in the repository root:
+Frontend (second terminal):
 
 ```bash
 npm install
 npm start
 ```
 
-The frontend is served by Create React App at `http://localhost:3000`.
+## 5. Environment Variables
 
-### 5. Optional local build verification
+Use `.env.example` as the only committed template.
 
-```bash
-npm run build
-```
+| Variable | Purpose |
+| --- | --- |
+| `REACT_APP_API_PROCESS_LOGIN` | Frontend login endpoint |
+| `REACT_APP_API_PROCESS_LOGIN_GG` | Frontend Google login endpoint |
+| `REACT_APP_API_NOTES` | Frontend notes listing endpoint |
+| `REACT_APP_API_ADD_NOTE` | Frontend create-note endpoint |
+| `REACT_APP_API_DELETE_NOTE` | Frontend delete-note endpoint |
+| `REACT_APP_API_UPDATE_NOTE` | Frontend update-note endpoint |
+| `REACT_APP_API_IMAGE_UPLOAD` | Frontend upload endpoint |
+| `REACT_APP_GOOGLE_CLIENT_ID` | Google client ID used by frontend |
+| `MONGODB_URI` | MongoDB connection URI |
+| `JWT_SECRET_KEY` | JWT signing secret |
+| `GOOGLE_CLIENT_ID` | Google client ID used by backend verification |
+| `BACKEND_CORS_ORIGINS` | Comma-separated allowed origins for backend CORS |
+| `API_ROOT_PATH` | FastAPI root path (default `/api`) |
+| `UPLOAD_STORAGE_MODE` | `local`, `cloudinary`, or `hybrid` |
+| `UPLOAD_LOCAL_DIR` | Local upload directory path |
+| `PUBLIC_BASE_URL` | Public base URL used to generate upload links |
+| `UPLOAD_CLOUDINARY_FOLDER` | Cloudinary folder name |
+| `CLOUDY_NAME` | Cloudinary cloud name (optional unless cloud mode used) |
+| `CLOUDY_API_KEY` | Cloudinary API key |
+| `CLOUDY_SECRET` | Cloudinary API secret |
 
-## Environment Variables
+## 6. Upload Storage Behavior
 
-Use `.env.example` as the only committed template. Copy it to `.env` and replace placeholders with real values.
+- `UPLOAD_STORAGE_MODE=local`: store uploads on server filesystem only.
+- `UPLOAD_STORAGE_MODE=cloudinary`: store uploads on Cloudinary only.
+- `UPLOAD_STORAGE_MODE=hybrid` (default): try local storage first, then Cloudinary fallback.
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `REACT_APP_API_PROCESS_LOGIN` | Yes | Frontend URL for the email/password login endpoint |
-| `REACT_APP_API_PROCESS_LOGIN_GG` | Yes | Frontend URL for the Google login endpoint |
-| `REACT_APP_API_NOTES` | Yes | Frontend URL used to fetch notes |
-| `REACT_APP_API_ADD_NOTE` | Yes | Frontend URL used to create a new note |
-| `REACT_APP_API_DELETE_NOTE` | Yes | Frontend URL used to delete a note |
-| `REACT_APP_API_UPDATE_NOTE` | Yes | Frontend URL used to update a note |
-| `REACT_APP_API_IMAGE_UPLOAD` | Yes | Frontend URL used to upload note images |
-| `REACT_APP_GOOGLE_CLIENT_ID` | Recommended | Google Sign-In client ID for the frontend; a legacy fallback exists in code for compatibility |
-| `CLOUDY_NAME` | Yes | Cloudinary cloud name used by the backend upload endpoint |
-| `CLOUDY_API_KEY` | Yes | Cloudinary API key |
-| `CLOUDY_SECRET` | Yes | Cloudinary API secret |
-| `MONGODB_URI` | Yes | MongoDB connection string used by backend data access utilities |
-| `JWT_SECRET_KEY` | Yes | Secret key used to sign backend JWT access tokens |
-| `GOOGLE_CLIENT_ID` | Recommended | Google Sign-In client ID for backend token verification; a legacy fallback exists in code for compatibility |
+The `/upload-image` API response format remains unchanged (`{"url": "..."}`).
 
-For local development, the sample values point directly to the FastAPI process. For reverse-proxied environments, these values can be changed to `/api/...` style routes.
+## 7. DevOps Phase Assets
 
-## Automation
+### Phase 1
 
-Phase 1 introduces the `scripts/` directory for reusable Linux automation.
+See `phase1/` for repository governance traceability and Git workflow evidence scaffolding.
 
-- `scripts/setup.sh`: prepares an Ubuntu host with the runtimes and directories required by this project. It installs system packages for Node.js and Python, creates runtime folders, prepares the backend virtual environment, and installs frontend dependencies.
-- `scripts/verify.sh`: performs a lightweight verification of tool versions and expected runtime directories after setup.
-- `scripts/README.md`: explains assumptions, configurable variables, and expected usage for the scripts.
+### Phase 2 (Traditional Host-Based Deployment)
 
-Run `scripts/setup.sh` on a fresh Ubuntu host before performing a manual deployment in Phase 2. The script intentionally does not contain secrets and does not deploy the application by itself.
+See:
 
-## High-Level Deployment Approach
+- `phase2/config/nginx/`
+- `phase2/config/systemd/`
+- `phase2/env/phase2.env.example`
+- `phase2/runbook/deploy-host.md`
+- `phase2/runbook/validation-checklist.md`
 
-### Phase 2: Traditional Host-Based Deployment
+### Phase 3 (Docker + Docker Compose)
 
-The application will be deployed directly on an Ubuntu cloud server. The host will be prepared with `scripts/setup.sh`, the backend will run inside a Python virtual environment, the frontend will be built for production, and Nginx plus a service manager such as systemd will be used for HTTPS exposure and process persistence.
+See:
 
-### Phase 3: Docker and Docker Compose Deployment
+- `phase3/docker/`
+- `phase3/compose/docker-compose.prod.yml`
+- `phase3/runbook/build-and-publish.md`
+- `phase3/runbook/deploy-compose.md`
+- `phase3/runbook/validation-checklist.md`
 
-The same application will later be packaged into containers. The web application will be built into a production image, published to a registry, and deployed alongside a containerized MongoDB instance through Docker Compose. The host-level reverse proxy configured in Phase 2 will be retained and pointed at the containerized web service.
+## 8. Git and Collaboration Requirements
 
-## Git Workflow Expectations
+This assignment requires real workflow evidence on your Git hosting platform:
 
-This repository is intended to be maintained under a professional pull-request workflow:
+- protected `main` branch
+- pull-request-only merges
+- reviewer approval requirement
+- no direct commits to `main`
+- visible meaningful contributions from all team members
 
-- All implementation work should happen on feature branches.
-- The `main` branch should be protected against direct pushes and force pushes.
-- Every merge to `main` should occur through a pull request.
-- Each pull request should have a clear title, a concise technical description, and at least one reviewer approval.
-- Evidence of branch protection, pull requests, reviews, and contributor history should be stored under `phase1/evidence/`.
+Capture those artifacts under `phase1/evidence/`.
 
-## Security Notes
+## 9. Technical Report Scaffolding
 
-- Never commit `.env`, tokens, passwords, API keys, or database credentials.
-- Commit only `.env.example` with placeholder values.
-- Do not commit generated artifacts such as `build/`, dependency directories, or runtime logs.
-- Screenshots and evidence for the report must be real project evidence; they must not be fabricated.
+- `docs/TECHNICAL_REPORT_TEMPLATE.md`
+- `docs/diagrams/README.md`
 
-## Phase Deliverables
+These templates are provided to structure a formal report by Phase 1/2/3, including comparative analysis and contribution evidence.
 
-- `phase1/` contains the Phase 1 checklist, evidence requirements, and summary notes.
-- `phase2/` is reserved for the traditional Ubuntu deployment artifacts.
-- `phase3/` is reserved for the Docker and Docker Compose artifacts.
+## 10. Security and Repository Hygiene
 
-## Legacy Deployment Notes
+- Never commit `.env` or live secrets.
+- Keep certificate/private key files out of git.
+- Do not fabricate screenshots, PR history, DNS, HTTPS, or Docker registry evidence.
+- Store only real artifacts collected from actual environments.
+- Use `docs/SECRETS_HYGIENE_CHECKLIST.md` if credentials were exposed in git history before cleanup.
 
-The repository still contains early deployment working files such as `nginx.conf`, `backend.service`, and `Deploy-step.md`. These are preserved as reference material and will be formalized during Phase 2.
+## 11. Legacy Files
+
+Root-level `nginx.conf`, `backend.service`, and `Deploy-step.md` are retained as compatibility references.
+Primary, graded artifacts are under `phase2/` and `phase3/`.

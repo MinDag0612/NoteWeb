@@ -17,6 +17,8 @@ Store screenshots or links for the following items:
 5. Repository structure overview after Phase 1 cleanup
 6. Optional: branch naming examples, review comments, or merge history
 
+Use `EVIDENCE_CHECKLIST.md` in this directory to track completion status.
+
 ## Suggested File Names
 
 - `branch-protection-main.png`

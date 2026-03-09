@@ -1,0 +1,45 @@
+﻿services:
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: noteweb-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - noteweb_net
+    ports:
+      - "127.0.0.1:3000:80"
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: noteweb-backend
+    restart: unless-stopped
+    env_file:
+      - ./runtime.env
+    depends_on:
+      - mongodb
+    networks:
+      - noteweb_net
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - uploads_data:/app/uploads
+
+  mongodb:
+    image: mongo:6.0
+    container_name: noteweb-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: WebNote
+    networks:
+      - noteweb_net
+    volumes:
+      - mongo_data:/data/db
+
+networks:
+  noteweb_net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  uploads_data:

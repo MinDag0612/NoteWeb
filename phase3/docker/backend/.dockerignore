@@ -1,0 +1,9 @@
+﻿# Backend image build ignore
+.git
+.gitignore
+build
+node_modules
+phase1
+phase2
+phase3
+docs
