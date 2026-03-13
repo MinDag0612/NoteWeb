@@ -1,5 +1,7 @@
 ﻿# Phase 3 - Docker + Docker Compose Deployment
 
+For assignment-wide status and ownership tracking, start with `../CHECKLIST_MASTER.md`.
+
 This directory contains production templates and runbooks for containerizing the application on the same Ubuntu server used in Phase 2.
 
 ## Goal

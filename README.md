@@ -1,5 +1,21 @@
 ﻿# NoteWeb Midterm Repository (Compliance-Oriented)
 
+## 0. Start Here (Team + Reviewer)
+
+Use this reading order so anyone can understand scope, status, and intent quickly:
+
+1. `CHECKLIST_MASTER.md` (master mapping from assignment checklist to repo evidence and status)
+2. `README.md` (architecture, local run instructions, repository conventions)
+3. `phase1/README_PHASE1.md`, `phase2/README.md`, `phase3/README.md`
+4. `phase1/evidence/`, `phase2/evidence/`, `phase3/evidence/` checklists
+
+Single source of truth for graded deployment artifacts:
+
+- Phase 1 governance and automation: `phase1/`
+- Phase 2 host deployment: `phase2/`
+- Phase 3 Docker deployment: `phase3/`
+- Deprecated compatibility references: `legacy/` (not primary grading artifacts)
+
 ## 1. Project Overview
 
 This repository contains a note management web application prepared for a DevOps midterm submission.
@@ -32,6 +48,8 @@ Core user flows include authentication, notes CRUD, and image upload handled by 
 |-- phase2/                        # Host-based deployment configs/runbooks/evidence checklist
 |-- phase3/                        # Docker + Compose configs/runbooks/evidence checklist
 |-- docs/                          # Technical report and diagram templates
+|-- legacy/                        # Deprecated compatibility references
+|-- CHECKLIST_MASTER.md            # Master assignment traceability and status
 |-- .env.example                   # Safe config template
 |-- .gitignore
 `-- package.json
@@ -111,6 +129,8 @@ The `/upload-image` API response format remains unchanged (`{"url": "..."}`).
 
 ## 7. DevOps Phase Assets
 
+Assignment-level traceability starts at `CHECKLIST_MASTER.md`.
+
 ### Phase 1
 
 See `phase1/` for repository governance traceability and Git workflow evidence scaffolding.
@@ -162,7 +182,12 @@ These templates are provided to structure a formal report by Phase 1/2/3, includ
 - Store only real artifacts collected from actual environments.
 - Use `docs/SECRETS_HYGIENE_CHECKLIST.md` if credentials were exposed in git history before cleanup.
 
-## 11. Legacy Files
+## 11. Legacy References
 
-Root-level `nginx.conf`, `backend.service`, and `Deploy-step.md` are retained as compatibility references.
-Primary, graded artifacts are under `phase2/` and `phase3/`.
+Deprecated compatibility files are stored under `legacy/`:
+
+- `legacy/nginx.conf`
+- `legacy/backend.service`
+- `legacy/Deploy-step.md`
+
+Primary, graded deployment artifacts are under `phase2/` and `phase3/`.

@@ -1,5 +1,7 @@
 ﻿# Phase 2 - Traditional Deployment on Ubuntu
 
+For assignment-wide status and ownership tracking, start with `../CHECKLIST_MASTER.md`.
+
 This directory contains the production templates and verification assets for the host-based deployment phase.
 
 ## Goal

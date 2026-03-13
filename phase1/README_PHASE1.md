@@ -1,5 +1,7 @@
 ﻿# Phase 1 Summary - Repository Governance and Automation
 
+For assignment-wide status and ownership tracking, start with `../CHECKLIST_MASTER.md`.
+
 ## Purpose
 
 Phase 1 focuses on repository quality, collaboration workflow discipline, and Linux automation readiness.
