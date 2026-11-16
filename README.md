@@ -1,70 +1,118 @@
-# Getting Started with Create React App
+# NoteWeb
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**NoteWeb** là mini note app để tạo, chỉnh sửa và xóa ghi chú. Ứng dụng dùng
+React ở frontend, FastAPI ở backend và MongoDB để lưu dữ liệu.
 
-## Available Scripts
+> Đây là bản mini chỉ có **một tài khoản local mặc định**, chưa có chức năng
+> đăng ký thêm tài khoản. Các ghi chú được lưu cho tài khoản này.
 
-In the project directory, you can run:
+## Tính năng
 
-### `npm start`
+- Đăng nhập bằng tài khoản mặc định.
+- Tạo, sửa và xóa ghi chú.
+- Tải ảnh lên Cloudinary (cần cấu hình thông tin Cloudinary).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Tài khoản mặc định
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Email | Mật khẩu |
+| --- | --- |
+| `admin@gmail.com` | `admin` |
 
-### `npm test`
+Mật khẩu được lưu trong MongoDB dưới dạng bcrypt hash. Tài khoản này dành cho
+môi trường local/demo; hãy đổi mật khẩu trước khi mở ứng dụng ra mạng.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Chạy bằng Docker Compose
 
-### `npm run build`
+Cần cài Docker Desktop (có Docker Compose).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Tạo file `.env`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Tạo `.env` từ mẫu nếu chưa có file, sau đó mở và chỉnh sửa:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.sample .env }
+notepad .env
+```
 
-### `npm run eject`
+Đặt một giá trị bí mật ngẫu nhiên cho `JWT_SECRET_KEY`:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```dotenv
+JWT_SECRET_KEY=thay-bang-chuoi-bi-mat-ngau-nhien
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Không commit `.env` lên Git. Các biến khác:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| Biến | Bắt buộc | Mục đích |
+| --- | --- | --- |
+| `JWT_SECRET_KEY` | Có | Ký và xác thực JWT của API. |
+| `MONGODB_URI` | Chỉ khi chạy local | Địa chỉ MongoDB; Compose tự dùng `mongodb://mongodb:27017`. |
+| `GG_CLIENT_ID`, `REACT_APP_GOOGLE_CLIENT_ID` | Không | Google Sign-In, nếu sử dụng. |
+| `CLOUDY_NAME`, `CLOUDY_API_KEY`, `CLOUDY_SECRET` | Không | Tải ảnh lên Cloudinary. |
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Các biến `REACT_APP_API_*` trong `.env.sample` dành cho frontend chạy local.
+Docker Compose đã cấu hình sẵn đường dẫn `/api` và proxy đến backend.
 
-## Learn More
+### 2. Khởi động ứng dụng
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```powershell
+docker compose up --build -d
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Frontend: <http://localhost:3000>
+- API health check: <http://localhost:3000/api/>
+- API docs: <http://localhost:3000/api/docs>
 
-### Code Splitting
+Compose khởi động MongoDB trước, đợi database healthy rồi mới chạy backend.
+Dữ liệu MongoDB được giữ trong volume `mongodb_data`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### 3. Tài khoản trong MongoDB
 
-### Analyzing the Bundle Size
+Khi khởi tạo MongoDB với volume mới, script sẽ tự tạo tài khoản mặc định ở trên.
+Nếu volume đã tồn tại từ trước, chạy lệnh sau một lần để thêm tài khoản mà
+không xóa dữ liệu:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```powershell
+docker compose exec mongodb mongosh --quiet --file /docker-entrypoint-initdb.d/01-create-admin.js
+```
 
-### Making a Progressive Web App
+### Lệnh thường dùng
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```powershell
+docker compose ps
+docker compose logs -f backend
+docker compose down
+```
 
-### Advanced Configuration
+Chỉ dùng `docker compose down -v` khi muốn xóa cả dữ liệu MongoDB.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Chạy local không dùng Docker
 
-### Deployment
+1. Tạo `.env` như hướng dẫn ở trên và đảm bảo MongoDB đang chạy tại địa chỉ
+   trong `MONGODB_URI`.
+2. Cài và chạy backend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+   ```powershell
+   python -m pip install -r requirements.txt
+   python -m uvicorn backend.app.main:app --reload
+   ```
 
-### `npm run build` fails to minify
+3. Mở terminal khác, cài và chạy frontend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+   ```powershell
+   npm install
+   npm start
+   ```
+
+Frontend local chạy tại <http://localhost:3000>, backend tại
+<http://127.0.0.1:8000>.
+
+## Cấu trúc chính
+
+```text
+backend/app/       FastAPI, xác thực, ghi chú và upload ảnh
+frontend/          Dockerfile và cấu hình Nginx
+mongo-init/        Script khởi tạo tài khoản mặc định
+src/               React frontend
+requirements.txt   Python dependencies
+docker-compose.yml Cấu hình MongoDB, backend và frontend
+```

@@ -1,0 +1,58 @@
+services:
+  mongodb:
+    image: mongo:8
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init/01-create-admin.js:/docker-entrypoint-initdb.d/01-create-admin.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      GG_CLIENT_ID: ${GG_CLIENT_ID:-}
+      CLOUDY_NAME: ${CLOUDY_NAME:-}
+      CLOUDY_API_KEY: ${CLOUDY_API_KEY:-}
+      CLOUDY_SECRET: ${CLOUDY_SECRET:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/').read()"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:80"
+
+volumes:
+  mongodb_data:

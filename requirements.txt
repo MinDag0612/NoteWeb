@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+bcrypt
+python-dotenv
+pymongo
+cloudinary
+google-auth
+requests
+python-multipart
+python-jose[cryptography]

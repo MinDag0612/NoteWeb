@@ -9,6 +9,7 @@
 /coverage
 
 # production
+/build
 
 # misc
 .DS_Store
@@ -29,8 +30,6 @@ __pycache__/
 *.pyo
 *.pyd
 
-nginx
-
 .env
 venv/
-backendSrc/venv/
+backend/venv/
